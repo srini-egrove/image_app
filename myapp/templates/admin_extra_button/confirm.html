@@ -1,0 +1,68 @@
+{% extends 'admin/base_site.html' %}{% load i18n static admin_list admin_urls %}
+{% block breadcrumbs %}
+    <div class="breadcrumbs">
+        <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+        &rsaquo;
+        <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_label|capfirst|escape }}</a>
+        &rsaquo;
+        {% trans 'Confirmation' as confirmation %}
+        {{ title|default_if_none:confirmation }}
+    </div>
+{% endblock %}
+
+{% block content %}
+    <h1>{% trans 'Train Image Model Myapp' %}</h1>
+    <h2>{{ message }}</h2>
+    {% if description %}
+    <br>
+    <div><h3>{{ description }}</h3></div>
+    <hr>
+    {% endif %}
+    <br><br><br><br><br>
+    <form id="my-form" method="post">
+        {% csrf_token %}
+        <input type="submit" class="btn btn-large btn-danger" value="Confirm">
+        <input type="button" class="btn btn-large btn-success"
+               onclick="javascript:history.back()"
+               value="Go Back">
+    </form>
+    <div class="outer-div">
+        <div id="loader" style="display: none;margin-left:35%;" class="inner-div">
+            <img src="https://media.tenor.com/On7kvXhzml4AAAAj/loading-gif.gif">
+        </div>
+    </div>
+    
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js" integrity="sha512-VEd+nq25CkR676O+pLBnDW09R7VQX9Mdiij052gVCp5yVH3jGtH70Ho/UUv4mJDsEdTvqRCFZg0NKGiojGnUCw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.css" integrity="sha512-3pIirOrwegjM6erE5gPSwkUzO+3cTjpnV9lexlNZqvupR64iZBnOOTiiLPb9M36zpMScbmUNIcHUqKD47M719g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script type="text/javascript">
+        // function myFunction() {
+        //     // toastr.success("Model traning process started sucesfully please wait");
+        //     $("body.admin-disabled").css({"pointer-events":"none","opacity":"0.5"})
+        //     // document.getElementById("my-form").submit();
+        //     $("#loader").css("display","block")
+
+
+        // }
+
+                    $('#my-form').on('submit', function(event) {
+              event.preventDefault();
+              toastr.success("Model traning process started sucesfully please wait");
+              $.ajax({
+                url: '',
+                method: 'POST',
+                data: $(this).serialize(),
+                success: function(response) {
+                    toastr.success("Images are trained sucessfully");
+                    history.back(); 
+                  // Handle success response
+                },
+                error: function(xhr, errmsg, err) {
+                  // Handle error response
+                }
+              });
+        });
+
+    </script>
+{% endblock content %}

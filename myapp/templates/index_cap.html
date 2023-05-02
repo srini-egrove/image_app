@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Webcam Image Upload</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Webcam Image Upload</h1>
+    <video id="webcam" autoplay></video>
+    <button id="capture-btn">Capture Image</button>
+    <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
+    <script>
+        var video = document.querySelector("#webcam");
+        if (navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function (stream) {
+                video.srcObject = stream;
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+        }
+        var captureButton = document.querySelector("#capture-btn");
+        var canvas = document.querySelector("#canvas");
+        captureButton.addEventListener('click', function() {
+            var context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob(function(blob) {
+                var formData = new FormData();
+                formData.append('file', blob, 'example.jpg');
+                $.ajax({
+                    url: '',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        console.log(response);
+                    },
+                    error: function(xhr, status, error) {
+                        console.log(xhr.responseText);
+                    }
+                });
+            }, 'image/jpeg', 0.7);
+        });
+    </script>
+</body>
+</html>
