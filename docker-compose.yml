@@ -1,0 +1,20 @@
+version: "3"
+services:
+  image_app:
+    image: image_app:latest
+    container_name: image_app
+    ports:
+      - 8000:8000
+    depends_on:
+      - postgres
+  postgres:
+    image: postgres:12.14
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=entertainment
+    ports:
+      - 5432:5432
+    volumes:
+      - /home/ubuntu/.image_app/postgress_db_data:/var/lib/postgresql/data
