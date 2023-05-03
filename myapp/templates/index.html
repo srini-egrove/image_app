@@ -361,8 +361,7 @@ box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);
 
                             if(images_link[i] == 'no links')
                             {
-                                console.log("link--->",images_link[i])
-                                window.open('http://imageapp.opentestdrive.com:8000/media/no_sites.html','_blank');
+                                toastr.error("Website is not avaiable for this image")
 
                             }
                             else
