@@ -110,7 +110,8 @@ def image_scan(request):
             # data.append(link_img_data)
         print("data---->",link_img_data)
 
-
+        os.remove('media/user_images/'+str(image_file))
+        Image.objects.filter(file=image_file).delete()
 
         return JsonResponse({"data":link_img_data})
         # except Exception as e:
