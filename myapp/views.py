@@ -1,5 +1,6 @@
 import time
-
+import os
+import pandas as pd
 from django.conf import settings
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
@@ -7,7 +8,9 @@ from .forms import ImageUploadForm
 from django.http import HttpResponse, JsonResponse
 # from DeepImageSearch import Index,LoadData,SearchImage
 from DeepImageSearch import Load_Data, Search_Setup
+import DeepImageSearch.config as config
 from .models import Image,MyModel,WebcamImage
+
 
 
 class mysearch_setup(Search_Setup):
@@ -19,6 +22,13 @@ class mysearch_setup(Search_Setup):
 
         data = self._start_feature_extraction()
         self._start_indexing(data)
+        self.image_data = pd.read_pickle(config.image_data_with_features_pkl(self.model_name))
+        self.f = len(self.image_data['features'][0])
+
+    def run_index_output(self):
+
+        print("\033[93m Meta data already Present, Please Apply Search!")
+        print(os.listdir(f'metadata-files/{self.model_name}'))
         self.image_data = pd.read_pickle(config.image_data_with_features_pkl(self.model_name))
         self.f = len(self.image_data['features'][0])
 # Create your views here.
@@ -77,9 +87,9 @@ def image_scan(request):
         webcam_image = Image(file=image_file)
         webcam_image.save()
 
-        image_list = Load_Data().from_folder(['/home/egrove/image_project/adminstration/media/images'])
-        st = Search_Setup(image_list=image_list, model_name='vgg19', pretrained=True, image_count=100)
-        st.run_index()
+        image_list = Load_Data().from_folder(['.'+settings.MEDIA_URL+'images'])
+        st = mysearch_setup(image_list=image_list, model_name='vgg19', pretrained=True, image_count=len(image_list))
+        st.run_index_output()
         imgurl=st.get_similar_images(image_path='media/user_images/'+str(image_file),number_of_images=1)
         print("url",imgurl)
         image_data_list = []
