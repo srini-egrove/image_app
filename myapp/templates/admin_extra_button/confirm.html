@@ -11,7 +11,7 @@
 {% endblock %}
 
 {% block content %}
-    <h1>{% trans 'Train Image Model Myapp' %}</h1>
+    <h1>{% trans 'Train Image Model' %}</h1>
     <h2>{{ message }}</h2>
     {% if description %}
     <br>
@@ -21,7 +21,7 @@
     <br><br><br><br><br>
     <form id="my-form" method="post">
         {% csrf_token %}
-        <input type="submit" class="btn btn-large btn-danger" value="Confirm">
+        <input type="button" class="btn btn-large btn-danger" onclick="myFunction()" value="Confirm">
         <input type="button" class="btn btn-large btn-success"
                onclick="javascript:history.back()"
                value="Go Back">
@@ -37,32 +37,28 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js" integrity="sha512-VEd+nq25CkR676O+pLBnDW09R7VQX9Mdiij052gVCp5yVH3jGtH70Ho/UUv4mJDsEdTvqRCFZg0NKGiojGnUCw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.css" integrity="sha512-3pIirOrwegjM6erE5gPSwkUzO+3cTjpnV9lexlNZqvupR64iZBnOOTiiLPb9M36zpMScbmUNIcHUqKD47M719g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script type="text/javascript">
-        // function myFunction() {
-        //     // toastr.success("Model traning process started sucesfully please wait");
-        //     $("body.admin-disabled").css({"pointer-events":"none","opacity":"0.5"})
-        //     // document.getElementById("my-form").submit();
-        //     $("#loader").css("display","block")
-
-
-        // }
-
-                    $('#my-form').on('submit', function(event) {
-              event.preventDefault();
-              toastr.success("Model traning process started sucesfully please wait");
-              $.ajax({
-                url: '',
-                method: 'POST',
-                data: $(this).serialize(),
-                success: function(response) {
-                    toastr.success("Images are trained sucessfully");
-                    history.back(); 
-                  // Handle success response
-                },
-                error: function(xhr, errmsg, err) {
-                  // Handle error response
-                }
-              });
-        });
-
+        function myFunction() {
+            toastr.success("Model traning process started sucesfully please wait");
+            $("body.admin-disabled").css({"pointer-events":"none","opacity":"0.5"})
+            document.getElementById("my-form").submit();
+            $("#loader").css("display","block")
+        }
+        // $('#my-form').on('submit', function(event) {
+        //       event.preventDefault();
+        //       toastr.success("Model traning process started sucesfully please wait");
+        //       $.ajax({
+        //         url: '',
+        //         method: 'POST',
+        //         data: $(this).serialize(),
+        //         success: function(response) {
+        //             toastr.success("Images are trained sucessfully");
+        //             history.back(); 
+        //           // Handle success response
+        //         },
+        //         error: function(xhr, errmsg, err) {
+        //           // Handle error response
+        //         }
+        //       });
+        // });
     </script>
 {% endblock content %}
