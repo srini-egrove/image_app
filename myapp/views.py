@@ -45,8 +45,13 @@ def image_upload(request):
             print("form",uploaded_file)
             if form.is_valid():
                 form.save()
-            st =Search_Setup(image_list=image_list, model_name='vgg19', pretrained=True, image_count=len(image_list))
-            imgurl=Search_Setup.get_similar_images(image_path='media/user_images/'+str(uploaded_file),number_of_images=5)
+            image_list = Load_Data().from_folder(['.'+settings.MEDIA_URL+'images'])
+            st = mysearch_setup(image_list=image_list, model_name='vgg19', pretrained=True, image_count=len(image_list))
+            st.run_index_output()
+            imgurl=st.get_similar_images(image_path='media/user_images/'+str(uploaded_file),number_of_images=1)
+
+            # st =Search_Setup(image_list=image_list, model_name='vgg19', pretrained=True, image_count=len(image_list))
+            # imgurl=Search_Setup.get_similar_images(image_path='media/user_images/'+str(uploaded_file),number_of_images=5)
             print("url",imgurl)
             image_data_list = []
             for i in imgurl.values():
@@ -65,6 +70,8 @@ def image_upload(request):
                 link_img_data[i] = im_data.get(i)
                 # data.append(link_img_data)
             print("data---->",link_img_data)
+            os.remove('media/user_images/'+str(uploaded_file))
+            Image.objects.filter(file=uploaded_file).delete()
 
 
 

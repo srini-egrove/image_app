@@ -170,48 +170,76 @@ input[type="search"]:focus{
 {
 box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);
 }
+
+#file {
+    width: 41rem;
+    height: 9rem;
+    padding: 50px;
+    border: 5px solid blue;
+    box-sizing: border-box;
+    left: 30%;
+    position: fixed;
+    bottom: 38%;
+}
   </style>
 
 </head>
 <body>
-<!-- partial:index.partial.html -->
-<!-- <div id="file"></div> -->
-<!--     <form class="searchbox" id="my-form" action="" enctype="multipart/form-data">
-        <input type="file" id="user_img" placeholder="Search" />
-        <button type="button" value="search" id="img_submit">&nbsp;</button>
-    </form> -->
-<!--     <div>
-    </div> -->
 
-<div class="photo-capture">
-<!-- Take Photo -->
-    <div class="row" style="text-align: center;">
-            <div class="camera col">
-                <video id="video" autoplay="">Video stream not available.</video>
-                <img src="/media/camera_button.png" id="startbutton" style="width:11%;">
+<ul class="nav nav-pills nav-justified" id="pills-tab" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" id="pills-home-tab" data-bs-toggle="pill" data-bs-target="#pills-home" type="button" role="tab" aria-controls="pills-home" aria-selected="true">Image Upload</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="pills-profile-tab" data-bs-toggle="pill" data-bs-target="#pills-profile" type="button" role="tab" aria-controls="pills-profile" aria-selected="false">Image Capture</button>
+  </li>
+</ul>
+<div class="tab-content" id="pills-tabContent">
+  <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
+    <div id="file">
+        <form class="searchbox" id="my-form" action="" enctype="multipart/form-data">
+            <input type="file" id="user_img" placeholder="Search" />
+            <button type="button" value="search" id="img_submit">Search</button>
+        </form>
+    </div>
+  </div>
+  <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
+    <div class="photo-capture">
+    <!-- Take Photo -->
+        <div class="row" style="text-align: center;">
+                <div class="camera col">
+                    <video id="video" autoplay="">Video stream not available.</video>
+                    <img src="/media/camera_button.png" id="startbutton" style="width:11%;">
+                    <!-- <button id="startbutton">Take photo</button> -->
+                </div>
+        </div>
+
+        <div class="row" style="text-align: center;">
+            <div class="col">
                 <!-- <button id="startbutton">Take photo</button> -->
             </div>
-    </div>
+            <div class="col">
+                <button id="switch-camera-button">Switch camera</button>
+            </div>
+        </div>
 
-    <div class="row" style="text-align: center;">
-        <div class="col">
-            <!-- <button id="startbutton">Take photo</button> -->
+        <br>
+        <!-- View photo -->
+        <div class="row" style="text-align: center;display:none;">
+                <canvas id="canvas"> </canvas>
+                <div class="output col">
+                    <img id="photo" alt="The screen capture will appear in this box.">
+                
+            </div>
         </div>
-        <div class="col">
-            <button id="switch-camera-button">Switch camera</button>
-        </div>
-    </div>
-
-    <br>
-<!-- View photo -->
-    <div class="row" style="text-align: center;display:none;">
-            <canvas id="canvas"> </canvas>
-            <div class="output col">
-                <img id="photo" alt="The screen capture will appear in this box.">
-            
-        </div>
-    </div>
 </div>
+  </div>
+</div>
+
+
+ 
+
+
 
 <!--     <div class="container">
         <div class="row" id="images_list">
@@ -226,53 +254,65 @@ box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);
 
 
 <script type="text/javascript">
-//     $(document).ready(function(){
+    $(document).ready(function(){
 
-//     $('#img_submit').click(function(){
+    $('#img_submit').click(function(){
 
-//           var form = $('#my-form')[0];
-//           var fd = new FormData(form);
-//           console.log("fd--->",fd)
-//           var files = $('#user_img')[0].files[0];
-//           fd.append('file',files);
+          var form = $('#my-form')[0];
+          var fd = new FormData(form);
+          console.log("fd--->",fd)
+          var files = $('#user_img')[0].files[0];
+          fd.append('file',files);
 
-//           toastr.info("The process stared please wait")
-//           $.ajax({
-//             url: '',
-//             method: 'POST',
-//             data: fd,
-//             contentType: false,
-//             processData: false,
-//             success: function(response) {
-//                 console.log("res-->",response)
-//                 if(response.data)
-//                 {
-//                     var images_list = Object.keys(response.data)
-//                     var images_link = Object.values(response.data)
+          toastr.info("The process stared please wait")
+          $.ajax({
+            url: '',
+            method: 'POST',
+            data: fd,
+            contentType: false,
+            processData: false,
+            success: function(response) {
+                console.log("res-->",response)
+                if(response.data)
+                {
+                    var images_list = Object.keys(response.data)
+                    var images_link = Object.values(response.data)
 
 
-//                     var img_code ="" 
-//                     for(var i=0;i<images_list.length;i++)
-//                     {
+                    var img_code ="" 
+                    for(var i=0;i<images_list.length;i++)
+                    {
 
-//                         img_show = "<div class='col'><div><img src=media/"+images_list[i]+" "+"style=width:176px;height:176px;></div><a href="+images_link[i]+" target='blank'>"+images_link[i]+"</a></div>"
-//                         img_code = img_code+ img_show
-//                     }
-//                     $("#images_list").html(img_code)
-//                     console.log("img_code-->",img_code)
-//                 }
-//                 else
-//                 {
-//                    toastr.error("Unable to fetch data") 
-//                 }
-//             },
-//             error: function(xhr, errmsg, err) {
-//                 toastr.error("Unable to fetch data")
-//               // Handle error response
-//             }
-//           });
-//     });
-// });
+                        img_show = "<div class='col'><div><img src=media/"+images_list[i]+" "+"style=width:176px;height:176px;></div><a href="+images_link[i]+" target='blank'>"+images_link[i]+"</a></div>"
+                        img_code = img_code+ img_show
+
+                        if(images_link[i] == 'no links')
+                        {
+                            toastr.error("Website is not avaiable for this image")
+
+                        }
+                        else
+                        {
+                            console.log("link--->",images_link[i])
+                            window.open(images_link[i],'_blank');
+
+                        }
+                    }
+                    $("#images_list").html(img_code)
+                    console.log("img_code-->",img_code)
+                }
+                else
+                {
+                   toastr.error("Unable to fetch data") 
+                }
+            },
+            error: function(xhr, errmsg, err) {
+                toastr.error("Unable to fetch data")
+              // Handle error response
+            }
+          });
+    });
+});
 
 
 
