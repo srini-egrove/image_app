@@ -10,6 +10,9 @@ from django.http import HttpResponse, JsonResponse
 from DeepImageSearch import Load_Data, Search_Setup
 import DeepImageSearch.config as config
 from .models import Image,MyModel,WebcamImage
+import tensorflow as tf
+import numpy as np
+import cv2
 
 
 
@@ -33,6 +36,62 @@ class mysearch_setup(Search_Setup):
         self.f = len(self.image_data['features'][0])
 # Create your views here.
 
+# @csrf_exempt
+# def image_upload(request):
+#     if request.method == 'POST':
+#         try:
+#             print("hi")
+#             print("request.POST",request.POST)
+#             print("request.FILES",request.FILES)
+#             form = ImageUploadForm(request.POST, request.FILES)
+#             uploaded_file = request.FILES.get('file')
+#             print("form",uploaded_file)
+#             if form.is_valid():
+#                 form.save()
+#             image_list = Load_Data().from_folder(['.'+settings.MEDIA_URL+'images'])
+#             st = mysearch_setup(image_list=image_list, model_name='vgg19', pretrained=True, image_count=len(image_list))
+#             st.run_index_output()
+#             imgurl=st.get_similar_images(image_path='media/user_images/'+str(uploaded_file),number_of_images=1)
+
+#             # st =Search_Setup(image_list=image_list, model_name='vgg19', pretrained=True, image_count=len(image_list))
+#             # imgurl=Search_Setup.get_similar_images(image_path='media/user_images/'+str(uploaded_file),number_of_images=5)
+#             print("url",imgurl)
+#             image_data_list = []
+#             for i in imgurl.values():
+#                 print(i.split('/')[2])
+#                 image_data_list.append('images/'+i.split('/')[3])
+#             print(image_data_list)
+#             image_matched_sites = MyModel.objects.filter(image__in=image_data_list).values('image','text')
+#             print("image_matched_sites--->",image_matched_sites)
+#             im_data = {}
+#             for i in image_matched_sites:
+#                 im_data[i.get('image')] = i.get('text')
+#             print("im data---->",im_data)
+#             data = []
+#             link_img_data ={}
+#             for i in image_data_list:
+#                 link_img_data[i] = im_data.get(i)
+#                 # data.append(link_img_data)
+#             print("data---->",link_img_data)
+#             # os.remove('media/user_images/'+str(uploaded_file))
+#             # Image.objects.filter(file=uploaded_file).delete()
+
+
+
+#             return JsonResponse({"data":link_img_data})
+#         except Exception as e:
+#             print("Error:",str(e))
+#             return JsonResponse({"data":None})
+#     print("ppppppp")
+#     return render(request, 'index.html')
+def preprocess_image(image_path):
+    image = cv2.imread(image_path)
+    image = cv2.resize(image, (224, 224))  # Resize the image to the desired input shape
+    image = image / 255.0  # Normalize the pixel values
+    image = np.expand_dims(image, axis=0)  # Add a batch dimension
+    return image
+
+
 @csrf_exempt
 def image_upload(request):
     if request.method == 'POST':
@@ -45,37 +104,35 @@ def image_upload(request):
             print("form",uploaded_file)
             if form.is_valid():
                 form.save()
-            image_list = Load_Data().from_folder(['.'+settings.MEDIA_URL+'images'])
-            st = mysearch_setup(image_list=image_list, model_name='vgg19', pretrained=True, image_count=len(image_list))
-            st.run_index_output()
-            imgurl=st.get_similar_images(image_path='media/user_images/'+str(uploaded_file),number_of_images=1)
+            im_data = {1:'https://www.broadwayworld.com/shows/A-Beautiful-Noise-333542.html',2:'https://www.broadwayworld.com/shows/Bad-Cinderella-333897.html',3:"https://www.broadwayworld.com/shows/Bob-Fosse's-Dancin'-333641.html",4:'https://www.broadwayworld.com/shows/White-Girl-in-Danger-334233.html',5:'https://www.broadwayworld.com/shows/Dog-Man-The-Musical-334386.html',6:'https://www.broadwayworld.com/shows/Grey-House-334403.html',7:'https://www.broadwayworld.com/shows/The-Book-of-Mormon-329767.html',8:'https://www.broadwayworld.com/shows/The-Phantom-of-the-Opera-6624.html',9:'https://www.broadwayworld.com/shows/Six-333248.html',10:'https://www.broadwayworld.com/shows/Sweeney-Todd-334066.html',}
+            model = tf.keras.models.load_model('media/test2_model.h5')
+            image_path = 'media/user_images/'+str(uploaded_file)
+            preprocessed_image = preprocess_image(image_path)
 
-            # st =Search_Setup(image_list=image_list, model_name='vgg19', pretrained=True, image_count=len(image_list))
-            # imgurl=Search_Setup.get_similar_images(image_path='media/user_images/'+str(uploaded_file),number_of_images=5)
-            print("url",imgurl)
-            image_data_list = []
-            for i in imgurl.values():
-                print(i.split('/')[2])
-                image_data_list.append('images/'+i.split('/')[3])
-            print(image_data_list)
-            image_matched_sites = MyModel.objects.filter(image__in=image_data_list).values('image','text')
-            print("image_matched_sites--->",image_matched_sites)
-            im_data = {}
-            for i in image_matched_sites:
-                im_data[i.get('image')] = i.get('text')
-            print("im data---->",im_data)
-            data = []
-            link_img_data ={}
-            for i in image_data_list:
-                link_img_data[i] = im_data.get(i)
-                # data.append(link_img_data)
-            print("data---->",link_img_data)
+            # Make predictions on the image
+            predictions = model.predict(preprocessed_image)
+            predicted_name = predictions[0]
+            print("Predicted Name:", predicted_name)
+            # Preprocess the input image
+
+            sorted_array = np.sort(predicted_name)[::-1]
+            top_1_values = sorted_array[:1]
+            print(top_1_values)
+            positions = np.where(predicted_name == top_1_values)[0]
+            matched_position = positions+1
+            print("matched_position:",matched_position)
+            print("url-->",im_data[matched_position[0]])
+            link_data = im_data[matched_position[0]]
+            data_percentage = (round(float(top_1_values), 2))*100
+            print("%:",data_percentage)
+
             os.remove('media/user_images/'+str(uploaded_file))
             Image.objects.filter(file=uploaded_file).delete()
 
 
 
-            return JsonResponse({"data":link_img_data})
+
+            return JsonResponse({"data":str(link_data),"match_percentage":int(data_percentage)})
         except Exception as e:
             print("Error:",str(e))
             return JsonResponse({"data":None})
@@ -117,8 +174,8 @@ def image_scan(request):
             # data.append(link_img_data)
         print("data---->",link_img_data)
 
-        os.remove('media/user_images/'+str(image_file))
-        Image.objects.filter(file=image_file).delete()
+        # os.remove('media/user_images/'+str(image_file))
+        # Image.objects.filter(file=image_file).delete()
 
         return JsonResponse({"data":link_img_data})
         # except Exception as e:

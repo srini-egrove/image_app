@@ -366,31 +366,42 @@ box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);
                 console.log("res-->",response)
                 if(response.data)
                 {
-                    var images_list = Object.keys(response.data)
-                    var images_link = Object.values(response.data)
-
-
-                    var img_code ="" 
-                    for(var i=0;i<images_list.length;i++)
+                    // var images_list = Object.keys(response.data)
+                    var images_link = response.data
+                    var match_per = response.match_percentage
+                    if(match_per <= 70)
                     {
+                        toastr.error("Website is not fetched for the given image")
 
-                        img_show = "<div class='col'><div><img src=media/"+images_list[i]+" "+"style=width:176px;height:176px;></div><a href="+images_link[i]+" target='blank'>"+images_link[i]+"</a></div>"
-                        img_code = img_code+ img_show
-
-                        if(images_link[i] == 'no links')
-                        {
-                            toastr.error("Website is not avaiable for this image")
-
-                        }
-                        else
-                        {
-                            console.log("link--->",images_link[i])
-                            window.open(images_link[i],'_blank');
-
-                        }
                     }
-                    $("#images_list").html(img_code)
-                    console.log("img_code-->",img_code)
+                    else
+                    {
+                        console.log("link--->",images_link)
+                        window.open(images_link,'_blank');
+
+                    }
+
+                    // var img_code ="" 
+                    // for(var i=0;i<images_list.length;i++)
+                    // {
+
+                    //     // img_show = "<div class='col'><div><img src=media/"+images_list[i]+" "+"style=width:176px;height:176px;></div><a href="+images_link[i]+" target='blank'>"+images_link[i]+"</a></div>"
+                    //     // img_code = img_code+ img_show
+
+                    //     if(images_link == 'no links')
+                    //     {
+                    //         toastr.error("Website is not avaiable for this image")
+
+                    //     }
+                    //     else
+                    //     {
+                    //         console.log("link--->",images_link)
+                    //         window.open(images_link,'_blank');
+
+                    //     }
+                    // }
+                    // $("#images_list").html(img_code)
+                    // console.log("img_code-->",img_code)
                 }
                 else
                 {
