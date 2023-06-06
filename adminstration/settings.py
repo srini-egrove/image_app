@@ -27,8 +27,8 @@ SECRET_KEY = "django-insecure-vi=0-d4j%987-%!-y8zi!nzwhv4)e(*m=szfkz5r2ontuub&6s
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
-CSRF_TRUSTED_ORIGINS = ['https://imageapp.opentestdrive.com']
-CORS_ORIGIN_WHITELIST = ['https://imageapp.opentestdrive.com']
+CSRF_TRUSTED_ORIGINS = ['https://imageapp.theopenxpress.com']
+CORS_ORIGIN_WHITELIST = ['https://imageapp.theopenxpress.com']
 
 
 # Application definition
