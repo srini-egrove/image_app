@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "myapp",
     "admin_extra_buttons",
     "DeepImageSearch",
+    "django_extensions",
 ]
 
 MIDDLEWARE = [
