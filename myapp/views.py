@@ -6,12 +6,12 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from .forms import ImageUploadForm
 from django.http import HttpResponse, JsonResponse
-# from DeepImageSearch import Index,LoadData,SearchImage
+# # from DeepImageSearch import Index,LoadData,SearchImage
 from DeepImageSearch import Load_Data, Search_Setup
-import DeepImageSearch.config as config
+# import DeepImageSearch.config as config
 from .models import Image,MyModel,WebcamImage
-import tensorflow as tf
-import numpy as np
+# import tensorflow as tf
+# import numpy as np
 import cv2
 import easyocr
 from spellchecker import SpellChecker
