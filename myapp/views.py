@@ -253,7 +253,7 @@ def image_upload(request):
             # find those words that may be misspelled
             misspelled = spell.unknown(result)
             list1=[]
-            for word in misspelled:
+            for word in result:
                 print("word-->",word)
                 # Get the one `most likely` answer
                 correct_word = spell.correction(word)
