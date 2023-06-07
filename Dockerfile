@@ -4,6 +4,8 @@ ENV PYTHONUNBUFFERED 1
 RUN mkdir /image_identification
 WORKDIR /image_identification
 RUN pip install --upgrade pip
+RUN apt update
+RUN apt install libgl1-mesa-glx
 COPY requirements.txt /image_identification/
 
 RUN pip install -r requirements.txt
