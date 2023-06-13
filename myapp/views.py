@@ -243,7 +243,7 @@ def image_upload(request):
         
         if form.is_valid():
             form.save()
-        image_path = 'https://454e-49-207-181-102.ngrok-free.app/media/user_images/'+str(uploaded_file)
+        image_path = 'https://imageapp.theopenxpress.com/media/user_images/'+str(uploaded_file)
         
         #------------request method
 
