@@ -18,6 +18,11 @@ from spellchecker import SpellChecker
 from urllib.parse import urlparse
 from fuzzywuzzy import fuzz
 import re
+from playwright.sync_api import sync_playwright
+from bs4 import BeautifulSoup
+import requests
+from collections import Counter
+
 
 class mysearch_setup(Search_Setup):
     def run_index_train(self):
@@ -228,76 +233,150 @@ def image_scan(request):
 @csrf_exempt
 def image_upload(request):
     if request.method == 'POST':
-        try:
-            print("hi")
-            print("request.POST",request.POST)
-            print("request.FILES",request.FILES)
-            form = ImageUploadForm(request.POST, request.FILES)
-            uploaded_file = request.FILES.get('file')
-            print("form",uploaded_file)
-            if form.is_valid():
-                form.save()
-            image_path = 'media/user_images/'+str(uploaded_file)
-            # import easyocr
+        # try:
+        print("hi")
+        print("request.POST",request.POST)
+        print("request.FILES",request.FILES)
+        form = ImageUploadForm(request.POST, request.FILES)
+        uploaded_file = request.FILES.get('file')
+        print("form",uploaded_file)
+        
+        if form.is_valid():
+            form.save()
+        image_path = 'https://454e-49-207-181-102.ngrok-free.app/media/user_images/'+str(uploaded_file)
+        
+        #------------request method
 
-            # Create an OCR reader
-            reader = easyocr.Reader(['en'],gpu=False)
-
-            # Read the image and extract the text
-            result = reader.readtext(image_path,detail = 0)
-            print(result)
-
-
-            spell = SpellChecker()
-
-            # find those words that may be misspelled
-            misspelled = spell.unknown(result)
-            list1=[]
-            for word in result:
-                print("word-->",word)
-                # Get the one `most likely` answer
-                correct_word = spell.correction(word)
-                print("most like-->",spell.correction(word))
-                if correct_word != None:
-                    list1.append(correct_word)
+        headers={'User-Agent': 'Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.97 Safari/537.36'}
+        url = f'https://lens.google.com/uploadbyurl?url={image_path}&hl=en'
+        print(url)
+        ss= requests.get(url,headers=headers)
+        # print(ss)
+        html = ss.text
+        # # print(html)
+        script_tag_pattern = r'<script nonce="[^"]*">(.*?)</script>'
+        script_contents = re.findall(script_tag_pattern, html, re.DOTALL)
+        # print(script_contents)
+        test_data= " ".join(script_contents)
+        pattern = r'\[\[.*?\[(.*?)\]\]\]'
+        matches = re.findall(pattern, test_data)
+        # print(matches)
+        c=0
+        text_data = ""
+        for i in matches:
+            c=c+1
+            if '"en",[[[' in i or '"fr",[[[' in i or 'null,[[["' in i or '"rw",[[[' in i:
+                print("cc--->",c)
+                if text_data:
+                    if len(i) < len(text_data):
+                        text_data = i
                 else:
-                    list1.append(word)
-            print(list1)
-            url_list = MyModel.objects.values_list('text', flat=True).distinct()
-            # email_list = Email.objects.values_list('email', flat=True).distinct()
-            print("url_list--->",url_list)
-            list2 = []
-            for path in url_list:
-                test = urlparse(path)
-                output =test.path
-                path_list = output.split('/')
-                site_data = path_list[-1]
-                ss=re.split(r'[`\-=~!@#$%^&*()_+\[\]{};\'\\:"|<,./<>?]', site_data)
-                list2.append(" ".join(ss))
-            print(list2)
+                    text_data  = i
 
+        text_data = re.findall(r'\b[A-Za-z]+\b', text_data)
+        
+        common_words = ["the", "is", "null", "of", "for", "www", "com", "musicales", "google", "http", "https", "Image", "Search", "search", "jpg", "png", "Broadway", "images", "Musical", "New", "MUSICAL", "THE", "true" ]
+        filtered_text_data = [word for word in text_data if len(word) >1 if word not in common_words]
 
-           
-            nearest_match = None
-            max_similarity = 0
-
-            for word1 in list1:
-                for word2 in list2:
-                    similarity = fuzz.token_set_ratio(word1, word2)
-                    if similarity > max_similarity:
-                        max_similarity = similarity
-                        nearest_match = (word1, word2)
-
-            data = list2.index(nearest_match[1])
-            print(data)
-            url_data = list(url_list)
-            print(url_data[data])
-            return JsonResponse({"data":str(url_data[data])})
+        list1 = " ".join(filtered_text_data)
+        list1=[list1]
+        print(list1)
 
 
 
-        except Exception as e:
-            print("Error:",str(e))
-            return JsonResponse({"data":None})
+
+
+
+
+
+
+        #------------------
+        # import easyocr
+
+        # Create an OCR reader
+        # reader = easyocr.Reader(['en'],gpu=False)
+
+        # # Read the image and extract the text
+        # result = reader.readtext(image_path,detail = 0)
+        # print(result)
+
+
+        # spell = SpellChecker()
+
+        # # find those words that may be misspelled
+        # misspelled = spell.unknown(result)
+        # list1=[]
+        # for word in result:
+        #     print("word-->",word)
+        #     # Get the one `most likely` answer
+        #     correct_word = spell.correction(word)
+        #     print("most like-->",spell.correction(word))
+        #     if correct_word != None:
+        #         list1.append(correct_word)
+        #     else:
+        #         list1.append(word)
+        # print(list1)
+
+        # with sync_playwright() as playwright:
+        #     image_url = image_path
+
+        #     page = playwright.chromium.launch(headless=True).new_page()
+        #     page.goto(f'https://lens.google.com/uploadbyurl?url={image_url}&hl=en')
+        #     page.wait_for_selector('.ICt2Q')
+        #     page.click('.ICt2Q')  
+        #     time.sleep(1)
+        #     page_source = page.content()
+        #     # print(page_source)
+        #     soup = BeautifulSoup(page_source, 'html.parser')
+        #     links = soup.select('a[href^="https://www.broad"]')  # Replace "https://example.com" with your desired link
+        #     # Extract the href attribute from each link
+        #     href_links = [link['href'] for link in links]
+        #     # print(href_links)
+        # list1 = []
+        # for path in href_links:
+        #     test = urlparse(path)
+        #     output =test.path
+        #     path_list = output.split('/')
+        #     site_data = path_list[-1]
+        #     rr=re.split(r'[`\-=~!@#$%^&*()_+\[\]{};\'\\:"|<,./<>?]', site_data)
+        #     list1.append(" ".join(rr))
+        # print("listt---->",list1)
+
+        url_list = MyModel.objects.values_list('text', flat=True).distinct()
+        # email_list = Email.objects.values_list('email', flat=True).distinct()
+        # print("url_list--->",url_list)
+        list2 = []
+        for path in url_list:
+            test = urlparse(path)
+            output =test.path
+            path_list = output.split('/')
+            site_data = path_list[-1]
+            ss=re.split(r'[`\-=~!@#$%^&*()_+\[\]{};\'\\:"|<,./<>?]', site_data)
+            list2.append(" ".join(ss))
+        print(list2)
+
+
+       
+        nearest_match = None
+        max_similarity = 0
+
+        for word1 in list1:
+            for word2 in list2:
+                similarity = fuzz.token_set_ratio(word1, word2)
+                if similarity > max_similarity:
+                    max_similarity = similarity
+                    nearest_match = (word1, word2)
+
+        data = list2.index(nearest_match[1])
+        print(data)
+        url_data = list(url_list)
+        print(url_data[data])
+        return JsonResponse({"data":str(url_data[data])})
+
+
+
+        # except Exception as e:
+            # print("Error:",str(e))
+            # return JsonResponse({"data":None})
     print("ppppppp")
     return render(request, 'index.html')
