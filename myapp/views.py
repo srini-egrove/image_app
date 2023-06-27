@@ -31,7 +31,7 @@ def image_to_text(request):
         print("form",uploaded_file)
         if form.is_valid():
             form.save()
-        image_path = 'https://b5d6-49-207-181-102.ngrok-free.app/media/user_images/'+str(uploaded_file)
+        image_path = 'https://imageapp.theopenxpress.com/media/user_images/'+str(uploaded_file)
         headers={'User-Agent': 'Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.97 Safari/537.36'}
         # Google lens URL 
         url = f'https://lens.google.com/uploadbyurl?url={image_path}&hl=en'
