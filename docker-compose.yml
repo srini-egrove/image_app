@@ -2,7 +2,7 @@ version: "3"
 services:
   image_app:
     image: image_app
-    container_name: image_ocr_app
+    container_name: image_app
     command: bash ./runserver.sh
     ports:
       - 8000:8000
