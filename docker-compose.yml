@@ -18,6 +18,6 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=broadway
     ports:
-      - 9000:5432
+      - 5432:5432
     volumes:
       - /home/ubuntu/.image_app/postgress_db_data:/var/lib/postgresql/data
