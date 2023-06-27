@@ -3,14 +3,14 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 RUN mkdir /image_identification
 WORKDIR /image_identification
-RUN pip install --upgrade pip
+RUN pip install --no-cache-dir --upgrade pip
 RUN apt update
-RUN apt install libgl1-mesa-glx
+RUN apt install libgl1-mesa-glx -y
 COPY requirements.txt /image_identification/
+RUN pip install --no-cache-dir -r requirements.txt
 
-RUN pip install -r requirements.txt
-COPY . /image_identification/
 
-EXPOSE 8000
+RUN apt clean -y && apt autoremove -y
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+
+

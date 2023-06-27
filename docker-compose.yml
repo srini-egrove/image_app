@@ -1,10 +1,13 @@
 version: "3"
 services:
   image_app:
-    image: image_app:latest
-    container_name: image_app
+    image: image_ocr_app:0.1
+    container_name: image_ocr_app
+    command: bash ./runserver.sh
     ports:
       - 8000:8000
+    volumes:
+      - .:/image_identification
     depends_on:
       - postgres
   postgres:
@@ -13,8 +16,8 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=entertainment
+      - POSTGRES_DB=broadway
     ports:
-      - 5432:5432
+      - 9000:5432
     volumes:
       - /home/ubuntu/.image_app/postgress_db_data:/var/lib/postgresql/data

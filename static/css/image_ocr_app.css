@@ -1,0 +1,34 @@
+    body{
+    background-color:#ede4dc;
+    }
+
+    @media (min-width:768px) and (max-width:1600px) {
+        #file {
+            width: 41rem;
+            height: 9rem;
+            padding: 50px;
+            border: 5px solid blue;
+            box-sizing: border-box;
+            left: 30%;
+            position: fixed;
+            bottom: 38%;
+        }
+    }
+    @media (min-width:360px) and (max-width:767px) {
+        #file {
+            width: 23rem;
+            height: 8rem;
+            padding: 46px 71px;
+            border: 5px solid blue;
+            box-sizing: border-box;
+            position: fixed;
+            bottom: 36%;
+        }
+
+    }
+    @media (min-width:360px) and (max-width:767px) {
+        #img_submit{
+            position: fixed;
+            bottom: 153px;
+        }
+    }

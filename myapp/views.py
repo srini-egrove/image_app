@@ -1,272 +1,52 @@
-import time
+import re
 import os
-import pandas as pd
-from django.conf import settings
+import requests
 from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
 from .forms import ImageUploadForm
 from django.http import HttpResponse, JsonResponse
-# # from DeepImageSearch import Index,LoadData,SearchImage
-from DeepImageSearch import Load_Data, Search_Setup
-# import DeepImageSearch.config as config
-from .models import Image,MyModel,WebcamImage
-# import tensorflow as tf
-# import numpy as np
-import cv2
-import easyocr
-from spellchecker import SpellChecker
+from .models import BroadwayData,Image
+from django.views.decorators.csrf import csrf_exempt
 from urllib.parse import urlparse
 from fuzzywuzzy import fuzz
-import re
-from playwright.sync_api import sync_playwright
-from bs4 import BeautifulSoup
-import requests
-from collections import Counter
 
-
-class mysearch_setup(Search_Setup):
-    def run_index_train(self):
-        """
-        Indexes the images in the image_list and creates an index file for fast similarity search.
-        """
-
-
-        data = self._start_feature_extraction()
-        self._start_indexing(data)
-        self.image_data = pd.read_pickle(config.image_data_with_features_pkl(self.model_name))
-        self.f = len(self.image_data['features'][0])
-
-    def run_index_output(self):
-
-        print("\033[93m Meta data already Present, Please Apply Search!")
-        print(os.listdir(f'metadata-files/{self.model_name}'))
-        self.image_data = pd.read_pickle(config.image_data_with_features_pkl(self.model_name))
-        self.f = len(self.image_data['features'][0])
 # Create your views here.
 
-# @csrf_exempt
-# def image_upload(request):
-#     if request.method == 'POST':
-#         try:
-#             print("hi")
-#             print("request.POST",request.POST)
-#             print("request.FILES",request.FILES)
-#             form = ImageUploadForm(request.POST, request.FILES)
-#             uploaded_file = request.FILES.get('file')
-#             print("form",uploaded_file)
-#             if form.is_valid():
-#                 form.save()
-#             image_list = Load_Data().from_folder(['.'+settings.MEDIA_URL+'images'])
-#             st = mysearch_setup(image_list=image_list, model_name='vgg19', pretrained=True, image_count=len(image_list))
-#             st.run_index_output()
-#             imgurl=st.get_similar_images(image_path='media/user_images/'+str(uploaded_file),number_of_images=3)
-
-#             # st =Search_Setup(image_list=image_list, model_name='vgg19', pretrained=True, image_count=len(image_list))
-#             # imgurl=Search_Setup.get_similar_images(image_path='media/user_images/'+str(uploaded_file),number_of_images=5)
-#             print("url",imgurl)
-#             image_data_list = []
-#             for i in imgurl.values():
-#                 print(i.split('/')[2])
-#                 image_data_list.append('images/'+i.split('/')[3])
-#             print(image_data_list)
-#             image_matched_sites = MyModel.objects.filter(image__in=image_data_list).values('image','text')
-#             print("image_matched_sites--->",image_matched_sites)
-#             im_data = {}
-#             for i in image_matched_sites:
-#                 im_data[i.get('image')] = i.get('text')
-#             print("im data---->",im_data)
-#             data = []
-#             link_img_data ={}
-#             for i in image_data_list:
-#                 link_img_data[i] = im_data.get(i)
-#                 # data.append(link_img_data)
-#             print("data---->",link_img_data)
-#             # os.remove('media/user_images/'+str(uploaded_file))
-#             # Image.objects.filter(file=uploaded_file).delete()
-
-
-
-#             return JsonResponse({"data":link_img_data})
-#         except Exception as e:
-#             print("Error:",str(e))
-#             return JsonResponse({"data":None})
-#     print("ppppppp")
-#     return render(request, 'index.html')
-# def preprocess_image(image_path):
-#     image = cv2.imread(image_path)
-#     image = cv2.resize(image, (224, 224))  # Resize the image to the desired input shape
-#     image = image / 255.0  # Normalize the pixel values
-#     image = np.expand_dims(image, axis=0)  # Add a batch dimension
-#     return image
-
-
-# @csrf_exempt
-# def image_upload(request):
-#     if request.method == 'POST':
-#         try:
-#             print("hi")
-#             print("request.POST",request.POST)
-#             print("request.FILES",request.FILES)
-#             form = ImageUploadForm(request.POST, request.FILES)
-#             uploaded_file = request.FILES.get('file')
-#             print("form",uploaded_file)
-#             if form.is_valid():
-#                 form.save()
-#             im_data = {1:'https://www.broadwayworld.com/shows/A-Beautiful-Noise-333542.html',2:'https://www.broadwayworld.com/shows/Bad-Cinderella-333897.html',3:"https://www.broadwayworld.com/shows/Bob-Fosse's-Dancin'-333641.html",4:'https://www.broadwayworld.com/shows/White-Girl-in-Danger-334233.html',5:'https://www.broadwayworld.com/shows/Dog-Man-The-Musical-334386.html',6:'https://www.broadwayworld.com/shows/Grey-House-334403.html',7:'https://www.broadwayworld.com/shows/The-Book-of-Mormon-329767.html',8:'https://www.broadwayworld.com/shows/The-Phantom-of-the-Opera-6624.html',9:'https://www.broadwayworld.com/shows/Six-333248.html',10:'https://www.broadwayworld.com/shows/Sweeney-Todd-334066.html',}
-#             model = tf.keras.models.load_model('media/test2_vgg_model.h5')
-#             image_path = 'media/user_images/'+str(uploaded_file)
-#             preprocessed_image = preprocess_image(image_path)
-
-#             # Make predictions on the image
-#             predictions = model.predict(preprocessed_image)
-#             predicted_name = predictions[0]
-#             print("Predicted Name:", predicted_name)
-#             # Preprocess the input image
-
-#             sorted_array = np.sort(predicted_name)[::-1]
-#             top_1_values = sorted_array[:1]
-#             print(top_1_values)
-#             positions = np.where(predicted_name == top_1_values)[0]
-#             matched_position = positions+1
-#             print("matched_position:",matched_position)
-#             print("url-->",im_data[matched_position[0]])
-#             link_data = im_data[matched_position[0]]
-#             data_percentage = (round(float(top_1_values), 2))*100
-#             print("%:",data_percentage)
-
-#             os.remove('media/user_images/'+str(uploaded_file))
-#             Image.objects.filter(file=uploaded_file).delete()
-
-
-
-
-#             return JsonResponse({"data":str(link_data),"match_percentage":int(data_percentage)})
-#         except Exception as e:
-#             print("Error:",str(e))
-#             return JsonResponse({"data":None})
-#     print("ppppppp")
-#     return render(request, 'index.html')
+def get_shows_details(url_list):
+    list_of_sites = []
+    for path in url_list:
+        test = urlparse(path)
+        output =test.path
+        path_list = output.split('/')
+        site_data = path_list[-1]
+        logo_site_strings=re.split(r'[`\-=~!@#$%^&*()_+\[\]{};\'\\:"|<,./<>?]', site_data)
+        list_of_sites.append(" ".join(logo_site_strings))
+    return list_of_sites
 
 
 @csrf_exempt
-def image_scan(request):
+def image_to_text(request):
     if request.method == 'POST':
-        # try:
-        print("hi")
-        print(request.POST)
-        image_file = request.FILES['file']
-        print("image_file-->",image_file)
-        webcam_image = Image(file=image_file)
-        webcam_image.save()
-
-        image_list = Load_Data().from_folder(['.'+settings.MEDIA_URL+'images'])
-        st = mysearch_setup(image_list=image_list, model_name='vgg19', pretrained=True, image_count=len(image_list))
-        st.run_index_output()
-        imgurl=st.get_similar_images(image_path='media/user_images/'+str(image_file),number_of_images=1)
-        print("url",imgurl)
-        image_data_list = []
-        for i in imgurl.values():
-            print(i.split('/')[2])
-            image_data_list.append('images/'+i.split('/')[3])
-        print(image_data_list)
-        image_matched_sites = MyModel.objects.filter(image__in=image_data_list).values('image','text')
-        print("image_matched_sites--->",image_matched_sites)
-        im_data = {}
-        for i in image_matched_sites:
-            im_data[i.get('image')] = i.get('text')
-        print("im data---->",im_data)
-        data = []
-        link_img_data ={}
-        for i in image_data_list:
-            link_img_data[i] = im_data.get(i)
-            # data.append(link_img_data)
-        print("data---->",link_img_data)
-
-        # os.remove('media/user_images/'+str(image_file))
-        # Image.objects.filter(file=image_file).delete()
-
-        return JsonResponse({"data":link_img_data})
-        # except Exception as e:
-        #     print("Error:",str(e))
-        #     return JsonResponse({"data":None})
-
-
-
-
-
-# def image_upload(request):
-#     context = dict()
-#     if request.method == 'POST':
-#         username = request.POST["username"]
-#         image_path = request.POST["src"]  # src is the name of input attribute in your html file, this src value is set in javascript code
-#         image = NamedTemporaryFile()
-#         image.write(urlopen(path).read())
-#         image.flush()
-#         image = File(image)
-#         name = str(image.name).split('\\')[-1]
-#         name += '.jpg'  # store image in jpeg format
-#         image.name = name
-#         if image is not None:
-#             obj = Image.objects.create(username=username, image=image)  # create a object of Image type defined in your model
-#             obj.save()
-#             context["path"] = obj.image.url  #url to image stored in my server/local device
-#             context["username"] = obj.username
-#         else :
-#             return redirect('/')
-#         return redirect('any_url')
-#     return render(request, 'index.html', context=context)  # context is like respose data we are sending back to user, that will be rendered with specified 'html file'.         
-
-# @csrf_exempt
-# def image_upload(request):
-#     if request.method == 'POST' and request.FILES:
-#         image_file = request.FILES['file']
-#         webcam_image = WebcamImage(image=image_file)
-#         webcam_image.save()
-#         # webcam_image = WebcamImage(image=image_file)
-#         # webcam_image.save()
-#         return JsonResponse({'status': 'success'})
-#     return render(request, 'index.html')
-
-
-#-----OCR Method----------
-
-@csrf_exempt
-def image_upload(request):
-    if request.method == 'POST':
-        # try:
-        print("hi")
-        print("request.POST",request.POST)
-        print("request.FILES",request.FILES)
         form = ImageUploadForm(request.POST, request.FILES)
-        uploaded_file = request.FILES.get('file')
+        uploaded_file = request.FILES.get('user_image_file')
         print("form",uploaded_file)
-        
         if form.is_valid():
             form.save()
-        image_path = 'https://imageapp.theopenxpress.com/media/user_images/'+str(uploaded_file)
-        
-        #------------request method
-
+        image_path = 'https://b5d6-49-207-181-102.ngrok-free.app/media/user_images/'+str(uploaded_file)
         headers={'User-Agent': 'Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.97 Safari/537.36'}
+        # Google lens URL 
         url = f'https://lens.google.com/uploadbyurl?url={image_path}&hl=en'
-        print(url)
-        ss= requests.get(url,headers=headers)
-        # print(ss)
-        html = ss.text
-        # # print(html)
-        script_tag_pattern = r'<script nonce="[^"]*">(.*?)</script>'
-        script_contents = re.findall(script_tag_pattern, html, re.DOTALL)
-        # print(script_contents)
+        print("Request URL:",url)
+        google_lens_api= requests.get(url,headers=headers)
+        html = google_lens_api.text
+        get_script_tag_pattern = r'<script nonce="[^"]*">(.*?)</script>'
+        script_contents = re.findall(get_script_tag_pattern, html, re.DOTALL)
         test_data= " ".join(script_contents)
         pattern = r'\[\[.*?\[(.*?)\]\]\]'
         matches = re.findall(pattern, test_data)
-        # print(matches)
-        c=0
+
         text_data = ""
         for i in matches:
-            c=c+1
-            if '"en",[[[' in i or '"fr",[[[' in i or 'null,[[["' in i or '"rw",[[[' in i:
-                print("cc--->",c)
+            if '"en",[[[' in i or '"fr",[[[' in i or '"rw",[[[' in i:
                 if text_data:
                     if len(i) < len(text_data):
                         text_data = i
@@ -274,109 +54,50 @@ def image_upload(request):
                     text_data  = i
 
         text_data = re.findall(r'\b[A-Za-z]+\b', text_data)
-        
-        common_words = ["the", "is", "null", "of", "for", "www", "com", "musicales", "google", "http", "https", "Image", "Search", "search", "jpg", "png", "Broadway", "images", "Musical", "New", "MUSICAL", "THE", "true" ]
-        filtered_text_data = [word for word in text_data if len(word) >1 if word not in common_words]
+        if text_data:
+            print("okokokok")
+            remove_common_words_filter = ["the", "is", "null", "of", "for", "www", "com", "musicales", "google", "http", "https", "Image", "Search", "search", "jpg", "png", "Broadway", "images", "Musical", "New", "MUSICAL", "THE", "true", "en","PLAYBILL", "IMPERIAL", "THEATRE", "The" ]
+            filtered_text_data = [word for word in text_data if len(word) >1 if word not in remove_common_words_filter]
 
-        list1 = " ".join(filtered_text_data)
-        list1=[list1]
-        print(list1)
+            google_lens_output = [" ".join(filtered_text_data)]
+            
+        else:
+            print("elseeee")
+            google_lens_broadway_urls = []
+            pattern_toget_broadway_links = r'https://www\.broadway\S*'
+            broadway_links = re.findall(pattern_toget_broadway_links, html)
+            for i in broadway_links:
+                split_urls= i.split(',')
+                for j in split_urls:
+                    if j.startswith("https://www.broadway"):
+                        google_lens_broadway_urls.append(j)
+            print("google_lens_broadway_urls--",google_lens_broadway_urls)
+            google_lens_output = get_shows_details(google_lens_broadway_urls)
 
-
-
-
-
-
-
-
-
-        #------------------
-        # import easyocr
-
-        # Create an OCR reader
-        # reader = easyocr.Reader(['en'],gpu=False)
-
-        # # Read the image and extract the text
-        # result = reader.readtext(image_path,detail = 0)
-        # print(result)
-
-
-        # spell = SpellChecker()
-
-        # # find those words that may be misspelled
-        # misspelled = spell.unknown(result)
-        # list1=[]
-        # for word in result:
-        #     print("word-->",word)
-        #     # Get the one `most likely` answer
-        #     correct_word = spell.correction(word)
-        #     print("most like-->",spell.correction(word))
-        #     if correct_word != None:
-        #         list1.append(correct_word)
-        #     else:
-        #         list1.append(word)
-        # print(list1)
-
-        # with sync_playwright() as playwright:
-        #     image_url = image_path
-
-        #     page = playwright.chromium.launch(headless=True).new_page()
-        #     page.goto(f'https://lens.google.com/uploadbyurl?url={image_url}&hl=en')
-        #     page.wait_for_selector('.ICt2Q')
-        #     page.click('.ICt2Q')  
-        #     time.sleep(1)
-        #     page_source = page.content()
-        #     # print(page_source)
-        #     soup = BeautifulSoup(page_source, 'html.parser')
-        #     links = soup.select('a[href^="https://www.broad"]')  # Replace "https://example.com" with your desired link
-        #     # Extract the href attribute from each link
-        #     href_links = [link['href'] for link in links]
-        #     # print(href_links)
-        # list1 = []
-        # for path in href_links:
-        #     test = urlparse(path)
-        #     output =test.path
-        #     path_list = output.split('/')
-        #     site_data = path_list[-1]
-        #     rr=re.split(r'[`\-=~!@#$%^&*()_+\[\]{};\'\\:"|<,./<>?]', site_data)
-        #     list1.append(" ".join(rr))
-        # print("listt---->",list1)
-
-        url_list = MyModel.objects.values_list('text', flat=True).distinct()
-        # email_list = Email.objects.values_list('email', flat=True).distinct()
-        # print("url_list--->",url_list)
-        list2 = []
-        for path in url_list:
-            test = urlparse(path)
-            output =test.path
-            path_list = output.split('/')
-            site_data = path_list[-1]
-            ss=re.split(r'[`\-=~!@#$%^&*()_+\[\]{};\'\\:"|<,./<>?]', site_data)
-            list2.append(" ".join(ss))
-        print(list2)
-
-
-       
+        url_list = BroadwayData.objects.values_list('shows_links', flat=True).distinct()
+        print("Input Data:",google_lens_output)
+        print("Datasets:",url_list)
+        list_of_sites = get_shows_details(url_list)
         nearest_match = None
         max_similarity = 0
-
-        for word1 in list1:
-            for word2 in list2:
-                similarity = fuzz.token_set_ratio(word1, word2)
+        for google_lens_data in google_lens_output:
+            for word in list_of_sites:
+                similarity = fuzz.token_set_ratio(google_lens_data, word)
                 if similarity > max_similarity:
                     max_similarity = similarity
-                    nearest_match = (word1, word2)
-
-        data = list2.index(nearest_match[1])
-        print(data)
-        url_data = list(url_list)
-        print(url_data[data])
-        return JsonResponse({"data":str(url_data[data])})
+                    nearest_match = (google_lens_data, word)
 
 
+        print("nearest_match-->",nearest_match)
+        if nearest_match:
+            broadway_sites_data = list(url_list)
+            matched_data_index = list_of_sites.index(nearest_match[1])
+            os.remove('media/user_images/'+str(uploaded_file))
+            Image.objects.filter(user_image_file=uploaded_file).delete()
 
-        # except Exception as e:
-            # print("Error:",str(e))
-            # return JsonResponse({"data":None})
-    print("ppppppp")
+            return JsonResponse({"data":str(broadway_sites_data[matched_data_index])})
+        else:
+            os.remove('media/user_images/'+str(uploaded_file))
+            Image.objects.filter(user_image_file=uploaded_file).delete()
+            return JsonResponse({"data":"no_data"})
     return render(request, 'index.html')
