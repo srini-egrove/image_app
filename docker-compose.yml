@@ -1,7 +1,7 @@
 version: "3"
 services:
   image_app:
-    image: image_ocr_app:0.1
+    image: image_app
     container_name: image_ocr_app
     command: bash ./runserver.sh
     ports:
