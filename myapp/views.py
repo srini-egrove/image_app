@@ -19,6 +19,7 @@ def get_shows_details(url_list):
         path_list = output.split('/')
         site_data = path_list[-1]
         logo_site_strings=re.split(r'[`\-=~!@#$%^&*()_+\[\]{};\'\\:"|<,./<>?]', site_data)
+        del logo_site_strings[-2:]
         list_of_sites.append(" ".join(logo_site_strings))
     return list_of_sites
 
@@ -54,25 +55,37 @@ def image_to_text(request):
                     text_data  = i
 
         text_data = re.findall(r'\b[A-Za-z]+\b', text_data)
-        if text_data:
+        remove_common_words_filter = ["the", "is", "null", "of", "for", "www", "com", "musicales", "google", "http", "https", "Image", "Search", "search", "jpg", "png", "Broadway", "images", "Musical", "New", "MUSICAL", "THE", "true", "en","PLAYBILL", "IMPERIAL", "THEATRE", "The" ]
+        filtered_text_data = [word for word in text_data if len(word) >1 if word not in remove_common_words_filter]
+        print("filtered_text_data--",filtered_text_data)
+        if filtered_text_data:
             print("okokokok")
-            remove_common_words_filter = ["the", "is", "null", "of", "for", "www", "com", "musicales", "google", "http", "https", "Image", "Search", "search", "jpg", "png", "Broadway", "images", "Musical", "New", "MUSICAL", "THE", "true", "en","PLAYBILL", "IMPERIAL", "THEATRE", "The" ]
-            filtered_text_data = [word for word in text_data if len(word) >1 if word not in remove_common_words_filter]
-
             google_lens_output = [" ".join(filtered_text_data)]
             
         else:
             print("elseeee")
             google_lens_broadway_urls = []
-            pattern_toget_broadway_links = r'https://www\.broadway\S*'
+            pattern_toget_broadway_links = r'https://www\.\S*'
             broadway_links = re.findall(pattern_toget_broadway_links, html)
+            google_lens_output = []
             for i in broadway_links:
                 split_urls= i.split(',')
                 for j in split_urls:
-                    if j.startswith("https://www.broadway"):
-                        google_lens_broadway_urls.append(j)
-            print("google_lens_broadway_urls--",google_lens_broadway_urls)
-            google_lens_output = get_shows_details(google_lens_broadway_urls)
+                    try:
+                        if j.startswith("https://"):
+                            if "broadway" in j:
+                                test = urlparse(j)
+                                output =test.path
+                                path_list = output.split('/')
+                                site_data = path_list[-1] + path_list[-2]
+                                logo_site_strings=re.split(r'[`\-=~!@#$%^&*()_+\[\]{};\'\\:"|<,./<>?]', site_data)
+                                if "broadway" in logo_site_strings:
+                                    google_lens_output.append(" ".join(logo_site_strings))
+                    except Exception as e:
+                        print(e)
+                        
+            # print("google_lens_broadway_urls--",google_lens_broadway_urls)
+            # google_lens_output = get_shows_details(google_lens_broadway_urls)
 
         url_list = BroadwayData.objects.values_list('shows_links', flat=True).distinct()
         print("Input Data:",google_lens_output)
